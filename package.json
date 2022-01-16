@@ -1,0 +1,31 @@
+{
+  "name": "tcp-controller",
+  "version": "1.0.0",
+  "description": "A simple TCP controller framework. With TCP Controller you can manage your TCP server more easily.",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "tsc",
+    "build": "tsc",
+    "start": "rimraf ./dist && ts-node src/index.ts",
+    "test": "rimraf ./dist && tsc && jest"
+  },
+  "keywords": [
+    "tcp",
+    "controller",
+    "connection",
+    "tcp/ip",
+    "network"
+  ],
+  "author": "Muryllo Pimenta de Oliveira",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^12.20.41",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "@muryllo/easy-decorators": "^1.1.9",
+    "frame-stream": "^3.0.0"
+  }
+}
