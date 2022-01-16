@@ -16,13 +16,13 @@ To use this library you need to create a class that will be the TCP controller a
 
   1. ```@TcpController([address, port])``` 
   2. ```@TcpMessageStream()```
-  3. ```@TcpMessage([address])```
+  3. ```@TcpMessage()```
   4. ```@TcpError()```
   5. ```@TcpListening()```
   6. ```@TcpClientDisconnected()```
-  7. ```@TcpClientConnected([eventname])```
-  8. ```@TcpCriteria()```
-  9. ```@TcpCriteriaId()```
+  7. ```@TcpClientConnected()```
+  8. ```@TcpCriteria([id])```
+  9. ```@TcpCriteriaId([id])```
   10. ```@TcpBuffer()```
   11. ```@TcpSocket()```
   12. ```@TcpInjectSocket()```
