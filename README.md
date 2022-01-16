@@ -52,58 +52,58 @@ To send a reply for each incoming message you can use the ```send``` function wh
 For a more detailed overview see the example of integration below using a Gateway to receive messages. Here is a TCP server sample:
 ```ts
 import { Socket } from "net";
-import { 
-  createServer, 
-  TcpGateway, 
-  TcpBuffer, 
-  TcpClientConnected, 
-  TcpClientDisconnected, 
-  TcpController, 
-  TcpCriteria, 
-  TcpCriteriaId, 
-  TcpError, 
-  TcpListening, 
-  TcpMessage, 
-  TcpMessageStream, 
-  TcpSocket 
+import {
+  createServer,
+  TcpGateway,
+  TcpBuffer,
+  TcpClientConnected,
+  TcpClientDisconnected,
+  TcpController,
+  TcpCriteria,
+  TcpCriteriaId,
+  TcpError,
+  TcpListening,
+  TcpMessage,
+  TcpMessageStream,
+  TcpSocket
 } from "tcp-controller";
 
 @TcpController("0.0.0.0", 1337)
 @TcpMessageStream()
 class TcpServer extends TcpGateway {
-	
-	@TcpClientConnected()
-	onConnect(@TcpSocket() sock: Socket) {
-		console.log("[Server] Connected client from " + sock.remoteAddress);
-		this.send(sock, Buffer.from("Server to client!"));
-		this.send(sock, Buffer.from("5erver to client!"));
-	}
 
-	@TcpClientDisconnected()
-	onDisconnect(hadError: boolean) {
-		console.log("[Server] Disconnected client with error? " + hadError);
-	}
+  @TcpClientConnected()
+  onConnect(@TcpSocket() sock: Socket) {
+    console.log("[Server] Connected client from " + sock.remoteAddress);
+    this.send(sock, Buffer.from("Server to client!"));
+    this.send(sock, Buffer.from("5erver to client!"));
+  }
 
-	@TcpError()
-	onError(error: Error) {
-		console.log("[Server] Error happened: " + error.message);
-	}
+  @TcpClientDisconnected()
+  onDisconnect(hadError: boolean) {
+    console.log("[Server] Disconnected client with error? " + hadError);
+  }
 
-	@TcpListening()
-	onListening() {
-		console.log("[Server] Server up.");
-	}
-	
-	@TcpCriteria("message")
-	@TcpMessage()
-	onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket) {
-		console.log("[Server] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
-	}
+  @TcpError()
+  onError(error: Error) {
+    console.log("[Server] Error happened: " + error.message);
+  }
 
-	@TcpCriteriaId("message")
-	isMessage(@TcpBuffer() buffer: Buffer) {
-		return buffer.toString().includes("Client to server!");
-	}
+  @TcpListening()
+  onListening() {
+    console.log("[Server] Server up.");
+  }
+
+  @TcpCriteria("message")
+  @TcpMessage()
+  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket) {
+    console.log("[Server] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
+  }
+
+  @TcpCriteriaId("message")
+  isMessage(@TcpBuffer() buffer: Buffer) {
+    return buffer.toString().includes("Client to server!");
+  }
 
 }
 
@@ -114,53 +114,52 @@ And here is a Client TCP Gateway:
 
 ```ts
 import { Socket } from "net";
-import { 
-  clientConnect, 
-  TcpGateway, 
-  TcpBuffer, 
-  TcpClientConnected, 
-  TcpClientDisconnected, 
-  TcpController, 
-  TcpCriteria, 
-  TcpCriteriaId, 
-  TcpError, 
-  TcpListening, 
-  TcpMessage, 
-  TcpMessageStream, 
-  TcpSocket 
+import {
+  clientConnect,
+  TcpGateway,
+  TcpBuffer,
+  TcpClientConnected,
+  TcpClientDisconnected,
+  TcpController,
+  TcpCriteria,
+  TcpCriteriaId,
+  TcpError,
+  TcpMessage,
+  TcpMessageStream,
+  TcpSocket
 } from "tcp-controller";
 
 @TcpController("0.0.0.0", 1337)
 @TcpMessageStream()
 class TcpClient extends TcpGateway {
 
-	@TcpClientConnected()
-	onConnect(@TcpSocket() sock: Socket){
-		console.log("[Client] Connected to server " + sock.remoteAddress);
-		this.send(sock, Buffer.from("Client to server!"));
-		this.send(sock, Buffer.from("Client to 5erver!"));
-	}
+  @TcpClientConnected()
+  onConnect(@TcpSocket() sock: Socket) {
+    console.log("[Client] Connected to server " + sock.remoteAddress);
+    this.send(sock, Buffer.from("Client to server!"));
+    this.send(sock, Buffer.from("Client to 5erver!"));
+  }
 
-	@TcpClientDisconnected()
-	onDisconnect(hadError: boolean){
-		console.log("[Client] Disconnected with error? " + hadError);
-	}
+  @TcpClientDisconnected()
+  onDisconnect(hadError: boolean) {
+    console.log("[Client] Disconnected with error? " + hadError);
+  }
 
-	@TcpError()
-	onError(error: Error){
-		console.log("[Client] Error happened: " + error.message);
-	}
-	
-	@TcpCriteria("message")
-	@TcpMessage()
-	onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket){
-		console.log("[Client] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
-	}
+  @TcpError()
+  onError(error: Error) {
+    console.log("[Client] Error happened: " + error.message);
+  }
 
-	@TcpCriteriaId("message")
-	isMessage(@TcpBuffer() buffer: Buffer){
-		return buffer.toString().includes("Server to client!");
-	}
+  @TcpCriteria("message")
+  @TcpMessage()
+  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket) {
+    console.log("[Client] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
+  }
+
+  @TcpCriteriaId("message")
+  isMessage(@TcpBuffer() buffer: Buffer) {
+    return buffer.toString().includes("Server to client!");
+  }
 
 }
 

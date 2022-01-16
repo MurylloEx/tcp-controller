@@ -1,12 +1,12 @@
 {
   "name": "tcp-controller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple TCP controller framework. With TCP Controller you can manage your TCP server more easily.",
   "main": "dist/index.js",
   "scripts": {
     "prepare": "tsc",
     "build": "tsc",
-    "start": "rimraf ./dist && ts-node src/index.ts",
+    "start": "rimraf ./dist && ts-node src/test.ts",
     "test": "rimraf ./dist && tsc && jest"
   },
   "keywords": [

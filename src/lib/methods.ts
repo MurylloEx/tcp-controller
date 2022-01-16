@@ -21,14 +21,23 @@ function handleTcpEvents(instance: any, sock: Socket){
 
   let stream = messageStream.length == 0 ? sock : sock.pipe(decode());
 
-  stream.on("close", (hadError: boolean) => {
+  sock.on("close", (hadError: boolean) => {
     //Call disconnected methods
     disconnected.map(e => {
       if (e.key){
         instance[e.key](hadError);
       }
     });
-  }).on("data", (data: Buffer) => {
+  }).on("error", (err: Error) => {
+    //Call error methods
+    error.map(e => {
+      if (e.key){
+        instance[e.key](err);
+      }
+    });
+  });
+
+  stream.on("data", (data: Buffer) => {
     //Call message methods
     message.map(e => {
       let criterias = criteria.filter(c => c.key == e.key);
@@ -68,13 +77,6 @@ function handleTcpEvents(instance: any, sock: Socket){
         exec(instance, instance[e.key], args);
       }
     });
-  }).on("error", (err: Error) => {
-    //Call error methods
-    error.map(e => {
-      if (e.key){
-        instance[e.key](err);
-      }
-    });
   });
 
   return sock;
@@ -93,7 +95,9 @@ export function clientConnect(gatewayClass: new () => TcpGateway){
   const { address, port } = controller.value;
 
   let sock = handleTcpEvents(instance, new Socket());
-  
+
+  sock.setKeepAlive(true, 3000);
+
   sock.connect(port, address, () => {
     //Call connected methods
     connected.map(e => {
