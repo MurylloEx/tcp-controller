@@ -1,8 +1,15 @@
-import { getEasyMetadataEntries } from "@muryllo/easy-decorators";
-import { createServer as createTcpServer, Socket } from "net";
-import { decode } from "frame-stream";
-import { TcpGateway } from "./base";
 import { exec } from "./execute";
+import { decode } from "frame-stream";
+import { TcpGateway, NativeSocket } from "./base";
+import { createServer as createTcpServer, Socket } from "net";
+import { EasyMetadataEntry, getEasyMetadataEntries } from "@muryllo/easy-decorators";
+
+function swapEntryValues<T = any>(entries: EasyMetadataEntry<T>[], newValue: T){
+  return entries.map((e => {
+    e.value = newValue;
+    return e;
+  }));
+}
 
 function handleTcpEvents(instance: any, sock: Socket){
   let messageStream = getEasyMetadataEntries(instance, "class:tcpmessagestream");
@@ -19,21 +26,20 @@ function handleTcpEvents(instance: any, sock: Socket){
     if (v.key) instance[v.key] = sock;
   });
 
-  let stream = messageStream.length == 0 ? sock : sock.pipe(decode());
+  let isMessageStream = messageStream.length == 0;
+  let nativeSocket = Object.assign<NativeSocket, Socket>(new NativeSocket(), sock);
+  let stream = isMessageStream ? nativeSocket : nativeSocket.pipe(decode());
 
   sock.on("close", (hadError: boolean) => {
     //Call disconnected methods
     disconnected.map(e => {
-      if (e.key){
-        instance[e.key](hadError);
-      }
+      if (e.key) instance[e.key](hadError);
     });
   }).on("error", (err: Error) => {
     //Call error methods
+    stream.end();
     error.map(e => {
-      if (e.key){
-        instance[e.key](err);
-      }
+      if (e.key) instance[e.key](err);
     });
   });
 
@@ -47,14 +53,8 @@ function handleTcpEvents(instance: any, sock: Socket){
         let criteriaRef = criteriaId.find(c => c.value == criteria.value);
 
         if (criteriaRef != undefined){
-          let buffers = buffer.filter(b => b.key == criteriaRef?.key).map(b => {
-            b.value = data;
-            return b;
-          });
-          let sockets = socket.filter(s => s.key == criteriaRef?.key).map(s => {
-            s.value = sock;
-            return s;
-          });
+          let buffers = swapEntryValues(buffer.filter(b => b.key == criteriaRef?.key), data);
+          let sockets = swapEntryValues(socket.filter(s => s.key == criteriaRef?.key), nativeSocket);
 
           let args = buffers.concat(sockets);
           
@@ -63,14 +63,8 @@ function handleTcpEvents(instance: any, sock: Socket){
       });
 
       if (status && e.key){
-        let buffers = buffer.filter(b => b.key == e.key).map(b => {
-          b.value = data;
-          return b;
-        });
-        let sockets = socket.filter(s => s.key == e.key).map(s => {
-          s.value = sock;
-          return s;
-        });
+        let buffers = swapEntryValues(buffer.filter(b => b.key == e.key), data);
+        let sockets = swapEntryValues(socket.filter(s => s.key == e.key), nativeSocket);
 
         let args = buffers.concat(sockets);
 
@@ -79,7 +73,7 @@ function handleTcpEvents(instance: any, sock: Socket){
     });
   });
 
-  return sock;
+  return nativeSocket;
 }
 
 export function clientConnect(gatewayClass: new () => TcpGateway){
@@ -97,16 +91,13 @@ export function clientConnect(gatewayClass: new () => TcpGateway){
   let sock = handleTcpEvents(instance, new Socket());
 
   sock.setKeepAlive(true, 3000);
-
   sock.connect(port, address, () => {
     //Call connected methods
     connected.map(e => {
       if (e.key){
         let sockets = socket.filter(s => s.key == e.key);
-        let args = sockets.map(s => {
-          s.value = sock;
-          return s;
-        });
+        let args = swapEntryValues(sockets, sock);
+
         exec(instance, instance[e.key], args);
       }
     });
@@ -131,37 +122,32 @@ export function createServer(gatewayClass: new () => TcpGateway){
   const { address, port } = controller.value;
   
   server.on("connection", (sock: Socket) => {
+    let nativeSock = handleTcpEvents(instance, sock);
+
     //Call connected methods
     connected.map(e => {
       if (e.key){
         let sockets = socket.filter(s => s.key == e.key);
-        let args = sockets.map(s => {
-          s.value = handleTcpEvents(instance, sock);
-          return s;
-        });
+        let args = swapEntryValues(sockets, nativeSock);
+
         exec(instance, instance[e.key], args);
-      }
-    });
-  }).on("close", () => {
-    //Call disconnected methods
-    disconnected.map(e => {
-      if (e.key){
-        instance[e.key]();
       }
     });
   }).on("listening", () => {
     //Call listening methods
     listening.map(e => {
-      if (e.key){
-        instance[e.key]();
-      }
+      if (e.key) instance[e.key]();
+    });
+  }).on("close", () => {
+    //Call disconnected methods
+    disconnected.map(e => {
+      if (e.key) instance[e.key]();
     });
   }).on("error", (err: Error) => {
     //Call error methods
     error.map(e => {
-      if (e.key){
-        instance[e.key](err);
-      }
+      if (e.key) instance[e.key](err);
     });
   }).listen(port, address);
+
 }
