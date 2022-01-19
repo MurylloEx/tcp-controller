@@ -1,5 +1,4 @@
-import { Socket } from "net";
-import { TcpGateway } from "./lib/base";
+import { NativeSocket, TcpGateway } from "./lib/base";
 import { clientConnect, createServer } from "./lib/methods";
 import {
   TcpBuffer,
@@ -20,7 +19,7 @@ import {
 class TcpServer extends TcpGateway {
 
   @TcpClientConnected()
-  onConnect(@TcpSocket() sock: Socket) {
+  onConnect(@TcpSocket() sock: NativeSocket) {
     console.log("[Server] Connected client from " + sock.remoteAddress);
     this.send(sock, Buffer.from("Server to client!"));
     this.send(sock, Buffer.from("5erver to client!"));
@@ -43,7 +42,7 @@ class TcpServer extends TcpGateway {
 
   @TcpCriteria("message")
   @TcpMessage()
-  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket) {
+  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: NativeSocket) {
     console.log("[Server] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
   }
 
@@ -59,7 +58,7 @@ class TcpServer extends TcpGateway {
 class TcpClient extends TcpGateway {
 
   @TcpClientConnected()
-  onConnect(@TcpSocket() sock: Socket) {
+  onConnect(@TcpSocket() sock: NativeSocket) {
     console.log("[Client] Connected to server " + sock.remoteAddress);
     this.send(sock, Buffer.from("Client to server!"));
     this.send(sock, Buffer.from("Client to 5erver!"));
@@ -77,7 +76,7 @@ class TcpClient extends TcpGateway {
 
   @TcpCriteria("message")
   @TcpMessage()
-  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: Socket) {
+  onMessage(@TcpBuffer() buffer: Buffer, @TcpSocket() sock: NativeSocket) {
     console.log("[Client] Message received from " + sock.remoteAddress + ".\nMessage: " + buffer.toString());
   }
 
