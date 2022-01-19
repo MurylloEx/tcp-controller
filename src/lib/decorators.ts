@@ -9,7 +9,7 @@ export const TcpController          = (address: string, port: number) => EasyCla
 export const TcpMessageStream       = () => EasyClassDecorator("class:tcpmessagestream", {});
 export const TcpMessage             = () => EasyMethodDecorator("method:tcpmessage", {});
 export const TcpError               = () => EasyMethodDecorator("method:tcperror", {});
-export const TcpListening           = () => EasyMethodDecorator("method:tcpmessage", {});
+export const TcpListening           = () => EasyMethodDecorator("method:tcplistening", {});
 export const TcpClientDisconnected  = () => EasyMethodDecorator("method:tcpclientdisconnected", {});
 export const TcpClientConnected     = () => EasyMethodDecorator("method:tcpclientconnected", {});
 export const TcpCriteria            = (id: string) => EasyMethodDecorator("method:tcpcriteria", id);
