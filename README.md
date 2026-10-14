@@ -74,7 +74,9 @@ import {
 } from 'tcp-controller';
 
 @TcpController('0.0.0.0', 1337)
-@TcpMessageStream({ maxFrameBytes: 1024 * 1024 })
+@TcpMessageStream({
+  maxFrameBytes: 1024 * 1024,
+})
 class ChatServer {
   @TcpListening()
   onListening(@TcpContext() context: TcpContext): void {
@@ -88,7 +90,10 @@ class ChatServer {
 
   @TcpCriteria(bytesIncludes(Buffer.from('ping')))
   @TcpMessage()
-  onPing(@TcpBuffer() frame: Uint8Array, @TcpSocket() socket: TcpSocket): void {
+  onPing(
+    @TcpBuffer() frame: Uint8Array,
+    @TcpSocket() socket: TcpSocket,
+  ): void {
     socket.send(frame);
   }
 
@@ -98,7 +103,10 @@ class ChatServer {
   }
 
   @TcpError()
-  onError(@TcpContext() context: TcpContext, @TcpException() error: Error): void {
+  onError(
+    @TcpContext() context: TcpContext,
+    @TcpException() error: Error,
+  ): void {
     console.error(context.source, context.method, error.message);
   }
 }
@@ -129,9 +137,15 @@ await server.close();
 `createServer` and `connect` take an optional `{ host, port }`. Each field that you pass replaces the decorator value for that call. The class metadata is unchanged, so another call can use a different override.
 
 ```ts
-const server = createServer(ChatServer, { host: '127.0.0.1', port: 0 });
+const server = createServer(ChatServer, {
+  host: '127.0.0.1',
+  port: 0,
+});
 const address = await server.ready;
-const client = connect(ChatClient, { host: address.host, port: address.port });
+const client = connect(ChatClient, {
+  host: address.host,
+  port: address.port,
+});
 await client.ready;
 ```
 
@@ -170,7 +184,11 @@ On the client, `ca` is the trust anchor, `servername` is the SNI name (the endpo
 
 ```ts
 @TcpController('0.0.0.0', 4433)
-@TcpSecure({ cert, key, requestCert: false })
+@TcpSecure({
+  cert,
+  key,
+  requestCert: false,
+})
 @TcpMessageStream()
 class SecureServer {
   @TcpClientConnected()
@@ -180,7 +198,11 @@ class SecureServer {
 }
 
 @TcpController('127.0.0.1', 4433)
-@TcpSecure({ ca, servername: 'localhost', rejectUnauthorized: true })
+@TcpSecure({
+  ca,
+  servername: 'localhost',
+  rejectUnauthorized: true,
+})
 @TcpMessageStream()
 class SecureClient {
   @TcpClientConnected()
@@ -227,7 +249,10 @@ onDisconnect(
 }
 
 @TcpError()
-onError(@TcpException() error: Error, @TcpContext() context: TcpContext): void {
+onError(
+  @TcpException() error: Error,
+  @TcpContext() context: TcpContext,
+): void {
   console.error(context.source, context.method, error.message);
 }
 ```
@@ -260,9 +285,14 @@ These helpers compare bytes. The needle is copied once, when the criterion is cr
 - `not(criterion)` inverts one criterion.
 
 ```ts
-import { allOf, prefix, TcpCriteria, TcpMessage, uint8At } from "tcp-controller";
+import { allOf, prefix, TcpCriteria, TcpMessage, uint8At } from 'tcp-controller';
 
-@TcpCriteria(allOf(prefix([0x01]), uint8At(1, 0x10)))
+@TcpCriteria(
+  allOf(
+    prefix([0x01]),
+    uint8At(1, 0x10),
+  ),
+)
 @TcpMessage()
 onHeader(): void {}
 ```
@@ -290,15 +320,26 @@ import { TcpController, TcpMessage, TcpWhen, minLength } from 'tcp-controller';
 
 @TcpController('0.0.0.0', 9000)
 class Server {
-  @TcpWhen({ offset: 0, width: 1, value: 0x01 }, { offset: 2, width: 1, value: 0x10 }, minLength(8))
+  @TcpWhen(
+    { offset: 0, width: 1, value: 0x01 },
+    { offset: 2, width: 1, value: 0x10 },
+    minLength(8),
+  )
   @TcpMessage()
   onArm(): void {}
 
-  @TcpWhen({ offset: 0, width: 1, value: 0x01 }, { offset: 2, width: 1, value: 0x20 })
+  @TcpWhen(
+    { offset: 0, width: 1, value: 0x01 },
+    { offset: 2, width: 1, value: 0x20 },
+  )
   @TcpMessage()
   onDisarm(): void {}
 
-  @TcpWhen({ offset: 0, width: 1, value: 0x01 })
+  @TcpWhen({
+    offset: 0,
+    width: 1,
+    value: 0x01,
+  })
   @TcpMessage()
   onPing(): void {}
 
@@ -416,11 +457,14 @@ In length-prefix mode, `send` throws `FramingError` when the payload is larger t
 An incoming frame over the limit is reported to `@TcpError` with `source` `"framing"`, the socket is destroyed, and later chunks on that connection are ignored. A `send` that throws does so at the call site. If that call is inside a handler, the exception is a handler error.
 
 ```ts
-import { FramingError, TcpContext, TcpError, TcpException } from "tcp-controller";
+import { FramingError, TcpContext, TcpError, TcpException } from 'tcp-controller';
 
 @TcpError()
-onError(@TcpContext() context: TcpContext, @TcpException() error: Error): void {
-  if (context.source === "framing" && error instanceof FramingError) {
+onError(
+  @TcpContext() context: TcpContext,
+  @TcpException() error: Error,
+): void {
+  if (context.source === 'framing' && error instanceof FramingError) {
     console.error(error.message);
   }
 }
